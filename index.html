@@ -24,7 +24,7 @@
       overflow: hidden; padding: 12px; gap: 10px; transition: background 0.3s;
     }
 
-    /* --- THEME 1: CYBERPUNK NEON (MẶC ĐỊNH) --- */
+    /* THEME 1: CYBERPUNK NEON */
     body.theme-cyber { background: #06080b; }
     body.theme-cyber .player-card {
       background: linear-gradient(180deg, #2a313d 0%, #1a1e26 40%, #11141a 100%);
@@ -37,7 +37,7 @@
     }
     body.theme-cyber .player-card.active .main-time { color: #00f2fe; text-shadow: 0 0 18px rgba(0, 242, 254, 0.8); }
 
-    /* --- THEME 2: CỜ TƯỚNG GỖ ĐỎ & VÀNG KIM (WOOD & GOLD) --- */
+    /* THEME 2: CỜ TƯỚNG GỖ ĐỎ & VÀNG KIM */
     body.theme-wood { background: #1a0b05; }
     body.theme-wood .player-card {
       background: linear-gradient(180deg, #5c2317 0%, #3d140b 40%, #240904 100%);
@@ -51,7 +51,6 @@
     body.theme-wood .player-card.active .main-time { color: #ffd700; text-shadow: 0 0 18px rgba(255, 215, 0, 0.8); }
     body.theme-wood .sub-info .count { color: #ffd700; }
 
-    /* --- COMMON STYLES --- */
     .player-wrapper { flex: 1; display: flex; width: 100%; position: relative; }
     #wrapper-p1 { transform: rotate(180deg); }
 
@@ -115,7 +114,6 @@
       box-shadow: 0 5px 0 #002266, 0 5px 15px rgba(0, 82, 212, 0.4), inset 0 1px 1px rgba(255,255,255,0.3);
     }
 
-    /* Modal & Summary */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
@@ -137,9 +135,8 @@
       background: #0d1117; color: #f0f6fc; font-size: 1rem; outline: none;
     }
 
-    /* Bảng Thống Kê Ván Cờ */
     .summary-box { background: #0d1117; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid #30363d; }
-    .summary-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px border-bottom: 1px solid #21262d; font-size: 0.9rem; }
+    .summary-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #21262d; font-size: 0.9rem; }
     .summary-row:last-child { border-bottom: none; }
     .summary-val { font-weight: bold; color: #ffab00; font-family: 'Orbitron', monospace; }
   </style>
@@ -226,7 +223,6 @@
   </div>
 
   <script>
-    // Lấy cấu hình từ LocalStorage
     let currentTheme = localStorage.getItem('chess_theme') || 'theme-cyber';
     let totalMinutes = parseInt(localStorage.getItem('chess_total')) || 15;
     let maxMoveSeconds = parseInt(localStorage.getItem('chess_move')) || 60;
@@ -234,11 +230,27 @@
     let tensionSeconds = parseInt(localStorage.getItem('chess_tension')) || 10;
 
     let p1Main, p2Main, p1Move, p2Move, p1Count = 0, p2Count = 0;
-    let p1Times = [], p2Times = []; // Lưu thời gian từng nước đi để thống kê
+    let p1Times = [], p2Times = [];
     let activePlayer = null, timer = null, audioCtx = null, wakeLock = null;
     let gameState = 'IDLE';
 
     document.body.className = currentTheme;
+
+    // Tải trước danh sách giọng nói trên iOS/Android
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+
+    // "Mồi" khởi động giọng nói bằng 1 câu không tiếng động khi người dùng tương tác
+    function warmupVoice() {
+      if ('speechSynthesis' in window) {
+        const silentUtterance = new SpeechSynthesisUtterance('');
+        silentUtterance.volume = 0;
+        window.speechSynthesis.speak(silentUtterance);
+      }
+    }
 
     async function requestWakeLock() {
       try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
@@ -269,14 +281,14 @@
       } catch (e) {}
     }
 
-    // Đọc giọng nói Tiếng Anh kịch tính khi hết giờ
     function speakVoice(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-US';
-        utterance.rate = 0.9;
-        utterance.pitch = 0.8;
+        utterance.rate = 0.95;
+        utterance.pitch = 0.9;
+        utterance.volume = 1;
         window.speechSynthesis.speak(utterance);
       }
     }
@@ -312,7 +324,10 @@
     }
 
     function toggleTimer() {
-      getAudioContext(); triggerHaptic();
+      getAudioContext(); 
+      triggerHaptic();
+      warmupVoice(); // Kích hoạt quyền giọng nói
+
       if (gameState === 'RUNNING') {
         clearInterval(timer); timer = null;
         gameState = 'IDLE'; releaseWakeLock();
@@ -327,7 +342,9 @@
 
     function switchPlayer(playerWhoPressed) {
       if (gameState === 'IDLE') return;
-      triggerHaptic(); playBeep(700, 'square', 0.04);
+      triggerHaptic(); 
+      playBeep(700, 'square', 0.04);
+      warmupVoice(); // Đảm bảo quyền phát âm thanh luôn mở trong lúc chơi
 
       if (gameState === 'READY') {
         document.getElementById('p1').classList.remove('ready');
@@ -339,7 +356,6 @@
 
       if (activePlayer !== playerWhoPressed) return;
 
-      // Ghi nhận thời gian suy nghĩ của nước vừa đi
       if (activePlayer === 1) {
         p1Times.push(maxMoveSeconds - p1Move);
         p1Main += incrementSeconds; p1Move = maxMoveSeconds; p1Count++; activePlayer = 2;
@@ -379,9 +395,12 @@
       clearInterval(timer); timer = null;
       gameState = 'IDLE'; releaseWakeLock();
       
-      playBeep(150, 'sawtooth', 0.8);
+      // Phát 3 còi dài liên tục để đảm bảo luôn báo hiệu được
+      playBeep(250, 'sawtooth', 0.3);
+      setTimeout(() => playBeep(250, 'sawtooth', 0.3), 350);
+      setTimeout(() => playBeep(250, 'sawtooth', 0.5), 700);
       
-      // Giọng nói thông báo kịch tính!
+      // Giọng nói thông báo kịch tính
       const loserPlayer = (winnerPlayer === 1) ? "Player 2" : "Player 1";
       speakVoice(`Time is up! ${loserPlayer}, you lose!`);
 
@@ -451,7 +470,7 @@
     }
 
     if ('serviceWorker' in navigator) {
-      const swCode = `self.addEventListener('install', e => e.waitUntil(caches.open('co-v8').then(c => c.addAll(['./'])))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));`;
+      const swCode = `self.addEventListener('install', e => e.waitUntil(caches.open('co-v9').then(c => c.addAll(['./'])))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));`;
       const blob = new Blob([swCode], { type: 'application/javascript' });
       navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
     }
