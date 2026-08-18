@@ -226,7 +226,7 @@
     let totalMinutes = parseInt(localStorage.getItem('chess_total')) || 15;
     let maxMoveSeconds = parseInt(localStorage.getItem('chess_move')) || 60;
     let incrementSeconds = parseInt(localStorage.getItem('chess_inc')) || 5;
-    let tensionSeconds = parseInt(localStorage.getItem('chess_tension')) || 10;
+    let tensionSeconds = parseInt(localStorage.getItem('chess_tension')) || 15;
 
     let p1Main, p2Main, p1Move, p2Move, p1Count = 0, p2Count = 0;
     let p1Times = [], p2Times = [];
@@ -235,17 +235,10 @@
 
     document.body.className = currentTheme;
 
-    // Chuỗi mã hóa MP3 còi báo cờ vua chuẩn (Base64 MP3)
-    const beepSoundData = "data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU";
-    
-    // Tạo phần tử Audio thật để vượt qua kiểm duyệt Autoplay của iOS/Android
-    const audioBeep = new Audio();
-    const audioEnd = new Audio();
-    
-    // Tần số còi bíp được mã hóa dạng sóng Audio Data URI chuẩn
-    function playAudioTone(freq = 800, duration = 0.2) {
+    function playAudioTone(freq = 800, duration = 0.1) {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === 'suspended') ctx.resume();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'square';
@@ -287,11 +280,20 @@
       setTimeout(() => playAudioTone(300, 0.6), 750);
     }
 
+    // ĐÃ SỬA: Logic phát âm thanh chính xác cho từng giây cảnh báo cuối cùng
     function playTensionSound(timeLeft) {
       if (tensionSeconds <= 0 || timeLeft > tensionSeconds || timeLeft <= 0) return;
-      if (timeLeft > 5) playAudioTone(600, 0.08);
-      else if (timeLeft > 1) playAudioTone(900, 0.08);
-      else if (timeLeft === 1) playAudioTone(1200, 0.3);
+      
+      if (timeLeft > 5) {
+        // Nhịp Tíc nhè nhẹ từ giây 15 -> 6
+        playAudioTone(650, 0.08);
+      } else if (timeLeft > 1) {
+        // Nhịp Tíc dồn dập cao tần từ giây 5 -> 2
+        playAudioTone(950, 0.08);
+      } else if (timeLeft === 1) {
+        // Giây cuối cùng phát còi kéo dài
+        playAudioTone(1200, 0.35);
+      }
     }
 
     function initDisplay() {
@@ -453,7 +455,6 @@
       closeSettings(); resetGame();
     }
 
-    // Đăng ký Service Worker bản v11 để xóa sạch cache cũ
     if ('serviceWorker' in navigator) {
       const swCode = `
         self.addEventListener('install', e => self.skipWaiting());
