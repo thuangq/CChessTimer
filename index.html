@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Đồng Hồ Cờ Tướng 3D Pro</title>
+  <title>Đồng Hồ Cờ Tướng Pro</title>
   
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -24,7 +24,6 @@
       overflow: hidden; padding: 12px; gap: 10px; transition: background 0.3s;
     }
 
-    /* THEME 1: CYBERPUNK NEON */
     body.theme-cyber { background: #06080b; }
     body.theme-cyber .player-card {
       background: linear-gradient(180deg, #2a313d 0%, #1a1e26 40%, #11141a 100%);
@@ -37,7 +36,6 @@
     }
     body.theme-cyber .player-card.active .main-time { color: #00f2fe; text-shadow: 0 0 18px rgba(0, 242, 254, 0.8); }
 
-    /* THEME 2: CỜ TƯỚNG GỖ ĐỎ & VÀNG KIM */
     body.theme-wood { background: #1a0b05; }
     body.theme-wood .player-card {
       background: linear-gradient(180deg, #5c2317 0%, #3d140b 40%, #240904 100%);
@@ -143,7 +141,7 @@
 </head>
 <body class="theme-cyber">
 
-  <!-- Người chơi 1 -->
+  <!-- Player 1 -->
   <div class="player-wrapper" id="wrapper-p1">
     <button id="p1" class="player-card" onclick="switchPlayer(1)">
       <div id="p1-main" class="main-time">15:00</div>
@@ -154,14 +152,14 @@
     </button>
   </div>
 
-  <!-- Điều khiển trung tâm -->
+  <!-- Controls -->
   <div class="controls">
     <button class="btn btn-primary" onclick="toggleTimer()" id="start-btn">► Sẵn sàng</button>
     <button class="btn" onclick="openSettings()">⚙️ Cài đặt</button>
     <button class="btn" onclick="resetGame()">🔄 Đặt lại</button>
   </div>
 
-  <!-- Người chơi 2 -->
+  <!-- Player 2 -->
   <div class="player-wrapper">
     <button id="p2" class="player-card" onclick="switchPlayer(2)">
       <div id="p2-main" class="main-time">15:00</div>
@@ -172,7 +170,7 @@
     </button>
   </div>
 
-  <!-- Modal Cài đặt -->
+  <!-- Settings Modal -->
   <div class="modal-overlay" id="settings-modal">
     <div class="modal">
       <h2>CÀI ĐẶT THỜI GIAN</h2>
@@ -206,7 +204,7 @@
     </div>
   </div>
 
-  <!-- Modal Thống Kê Ván Cờ -->
+  <!-- Summary Modal -->
   <div class="modal-overlay" id="summary-modal">
     <div class="modal">
       <h2 id="summary-title" style="color:#ff0055;">KẾT THÚC VÁN ĐẤU!</h2>
@@ -236,19 +234,13 @@
 
     document.body.className = currentTheme;
 
-    // Tải trước danh sách giọng nói trên iOS/Android
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.getVoices();
-      };
-    }
-
-    // "Mồi" khởi động giọng nói bằng 1 câu không tiếng động khi người dùng tương tác
-    function warmupVoice() {
-      if ('speechSynthesis' in window) {
-        const silentUtterance = new SpeechSynthesisUtterance('');
-        silentUtterance.volume = 0;
-        window.speechSynthesis.speak(silentUtterance);
+    // Khởi tạo và unlock Web Audio Context
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
       }
     }
 
@@ -260,45 +252,43 @@
       if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
     }
 
-    function getAudioContext() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      return audioCtx;
+    function triggerHaptic() { if (navigator.vibrate) navigator.vibrate(30); }
+
+    function playTone(freq, type, duration, delay = 0) {
+      if (!audioCtx) return;
+      setTimeout(() => {
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + duration);
+        } catch (e) {}
+      }, delay * 1000);
     }
 
-    function triggerHaptic() { if (navigator.vibrate) navigator.vibrate(20); }
-
-    function playBeep(freq = 440, type = 'sine', duration = 0.1) {
-      try {
-        const ctx = getAudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = type; osc.frequency.value = freq;
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start();
-        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
-        osc.stop(ctx.currentTime + duration);
-      } catch (e) {}
-    }
-
-    function speakVoice(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.95;
-        utterance.pitch = 0.9;
-        utterance.volume = 1;
-        window.speechSynthesis.speak(utterance);
-      }
+    // Âm thanh còi báo kết thúc chuyên nghiệp (Thay thế giọng nói nói bị cấm)
+    function playEndGameSound() {
+      initAudio();
+      // Chuỗi âm thanh còi hết giờ kịch tính (Game Over Alert)
+      playTone(523.25, 'square', 0.2, 0.0);  // C5
+      playTone(392.00, 'square', 0.2, 0.2);  // G4
+      playTone(329.63, 'square', 0.2, 0.4);  // E4
+      playTone(220.00, 'sawtooth', 0.8, 0.6); // A3 (Kéo dài)
     }
 
     function playTensionSound(timeLeft) {
       if (tensionSeconds <= 0 || timeLeft > tensionSeconds || timeLeft <= 0) return;
+      initAudio();
       const progress = timeLeft / tensionSeconds;
-      if (progress > 0.5) playBeep(400 + (1 - progress) * 400, 'sine', 0.08);
-      else if (timeLeft > 1) playBeep(800 + (0.5 - progress) * 800, 'square', 0.06);
-      else if (timeLeft === 1) playBeep(1200, 'sawtooth', 0.25);
+      if (progress > 0.5) playTone(440, 'sine', 0.08);
+      else if (timeLeft > 1) playTone(880, 'square', 0.06);
+      else if (timeLeft === 1) playTone(1200, 'sawtooth', 0.25);
     }
 
     function initDisplay() {
@@ -324,9 +314,8 @@
     }
 
     function toggleTimer() {
-      getAudioContext(); 
+      initAudio(); 
       triggerHaptic();
-      warmupVoice(); // Kích hoạt quyền giọng nói
 
       if (gameState === 'RUNNING') {
         clearInterval(timer); timer = null;
@@ -342,9 +331,9 @@
 
     function switchPlayer(playerWhoPressed) {
       if (gameState === 'IDLE') return;
+      initAudio();
       triggerHaptic(); 
-      playBeep(700, 'square', 0.04);
-      warmupVoice(); // Đảm bảo quyền phát âm thanh luôn mở trong lúc chơi
+      playTone(700, 'square', 0.04);
 
       if (gameState === 'READY') {
         document.getElementById('p1').classList.remove('ready');
@@ -395,14 +384,8 @@
       clearInterval(timer); timer = null;
       gameState = 'IDLE'; releaseWakeLock();
       
-      // Phát 3 còi dài liên tục để đảm bảo luôn báo hiệu được
-      playBeep(250, 'sawtooth', 0.3);
-      setTimeout(() => playBeep(250, 'sawtooth', 0.3), 350);
-      setTimeout(() => playBeep(250, 'sawtooth', 0.5), 700);
-      
-      // Giọng nói thông báo kịch tính
-      const loserPlayer = (winnerPlayer === 1) ? "Player 2" : "Player 1";
-      speakVoice(`Time is up! ${loserPlayer}, you lose!`);
+      // Phát chuỗi âm thanh kết thúc
+      playEndGameSound();
 
       showSummary(winnerPlayer);
     }
@@ -470,10 +453,14 @@
     }
 
     if ('serviceWorker' in navigator) {
-      const swCode = `self.addEventListener('install', e => e.waitUntil(caches.open('co-v9').then(c => c.addAll(['./'])))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));`;
+      const swCode = `self.addEventListener('install', e => e.waitUntil(caches.open('co-v10').then(c => c.addAll(['./'])))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));`;
       const blob = new Blob([swCode], { type: 'application/javascript' });
       navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
     }
+
+    // Tự động kích hoạt Audio khi chạm bất kỳ đâu
+    document.addEventListener('touchstart', initAudio, { once: true });
+    document.addEventListener('click', initAudio, { once: true });
 
     initDisplay();
   </script>
