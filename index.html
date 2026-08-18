@@ -3,74 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Đồng Hồ Cờ Tướng Pro 3D</title>
+  <title>Đồng Hồ Cờ Tướng 3D Pro</title>
   
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Đồng Hồ Cờ">
-  <meta name="theme-color" content="#0d1117">
+  <meta name="theme-color" content="#0a0c10">
   
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='%2300f2fe'><rect width='100' height='100' rx='22' fill='%230d1117'/><text x='50%' y='68%' font-size='60' text-anchor='middle' fill='%2300f2fe'>⏱️</text></svg>">
-  <link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;Đồng Hồ Cờ Tướng Pro&quot;,&quot;short_name&quot;:&quot;Đồng Hồ Cờ&quot;,&quot;start_url&quot;:&quot;./&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%230d1117&quot;,&quot;theme_color&quot;:&quot;%230d1117&quot;}">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='%2300f2fe'><rect width='100' height='100' rx='22' fill='%230a0c10'/><text x='50%' y='68%' font-size='60' text-anchor='middle' fill='%2300f2fe'>⏱️</text></svg>">
+  <link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;Đồng Hồ Cờ Tướng Pro&quot;,&quot;short_name&quot;:&quot;Đồng Hồ Cờ&quot;,&quot;start_url&quot;:&quot;./&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%230a0c10&quot;,&quot;theme_color&quot;:&quot;%230a0c10&quot;}">
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Orbitron:wght@700;900&display=swap');
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Chakra Petch', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { display: flex; flex-direction: column; height: 100vh; background: #090c10; color: #f0f6fc; user-select: none; overflow: hidden; padding: 8px; }
-    
-    /* Mặt nút bấm khối 3D nổi */
-    .player-card {
-      flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
-      position: relative; border: none; 
-      background: linear-gradient(145deg, #1e242d, #12161c);
-      cursor: pointer; transition: all 0.15s ease;
-      width: 100%; border-radius: 24px; margin: 6px 0; overflow: hidden;
-      
-      /* Hiệu ứng Đổ bóng khối 3D */
-      box-shadow: 
-        0 10px 20px rgba(0, 0, 0, 0.6),
-        inset 0 2px 2px rgba(255, 255, 255, 0.15),
-        inset 0 -4px 6px rgba(0, 0, 0, 0.8);
+    body { 
+      display: flex; flex-direction: column; height: 100vh; 
+      background: #06080b; color: #f0f6fc; user-select: none; 
+      overflow: hidden; padding: 12px; gap: 10px;
     }
 
-    /* Hiệu ứng khi lún xuống lúc chạm vào */
-    .player-card:active {
-      transform: translateY(4px);
+    /* Vùng chứa khung nút bấm 3D */
+    .player-wrapper {
+      flex: 1; display: flex; width: 100%; position: relative;
+    }
+    #wrapper-p1 { transform: rotate(180deg); }
+
+    /* Nút bấm nổi khối 3D dầy dặn */
+    .player-card {
+      width: 100%; height: 100%; display: flex; flex-direction: column; 
+      justify-content: center; align-items: center; border: none; cursor: pointer;
+      border-radius: 24px; position: relative;
+      
+      /* Tạo màu kim loại tối bóng dầu */
+      background: linear-gradient(180deg, #2a313d 0%, #1a1e26 40%, #11141a 100%);
+      
+      /* Độ vát khối nổi 3D siêu dầy (Chân đế & Viền bóng) */
       box-shadow: 
-        0 4px 8px rgba(0, 0, 0, 0.4),
-        inset 0 3px 6px rgba(0, 0, 0, 0.9);
+        0 12px 0 #090b0e,                       /* Chân đế dầy nổi lên bàn */
+        0 15px 25px rgba(0, 0, 0, 0.8),          /* Bóng dổ diện rộng */
+        inset 0 3px 2px rgba(255, 255, 255, 0.25),/* Viền việt sáng mép trên */
+        inset 0 -3px 5px rgba(0, 0, 0, 0.9);     /* Bóng chìm mép dưới */
+      
+      transition: all 0.08s ease;
+    }
+
+    /* Hiệu ứng lún nút 3D khi bấm vào */
+    .player-card:active {
+      transform: translateY(8px);
+      box-shadow: 
+        0 4px 0 #090b0e,                        /* Thu hẹp chân đế */
+        0 6px 12px rgba(0, 0, 0, 0.6),
+        inset 0 4px 8px rgba(0, 0, 0, 0.8);      /* Lún sâu vào trong */
     }
     
-    #p1 { transform: rotate(180deg); }
-    
-    /* Khi đến lượt: Đổ bóng Led Neon 3D nổi bật */
+    /* Trạng thái Lượt chơi Active (Đèn Neon & Khối 3D rực rỡ) */
     .player-card.active {
-      background: linear-gradient(145deg, #222933, #151a21) !important;
+      background: linear-gradient(180deg, #1d3344 0%, #12222e 40%, #0a141c 100%) !important;
       border: 2px solid #00f2fe;
       box-shadow: 
-        0 0 25px rgba(0, 242, 254, 0.35),
-        0 10px 20px rgba(0, 0, 0, 0.7),
-        inset 0 2px 2px rgba(0, 242, 254, 0.4),
-        inset 0 -4px 6px rgba(0, 0, 0, 0.8) !important;
+        0 12px 0 #051821,
+        0 0 30px rgba(0, 242, 254, 0.4),
+        inset 0 3px 3px rgba(0, 242, 254, 0.5),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.9) !important;
     }
-    .player-card.active .main-time { color: #00f2fe; text-shadow: 0 0 15px rgba(0, 242, 254, 0.6); }
+    .player-card.active .main-time { color: #00f2fe; text-shadow: 0 0 18px rgba(0, 242, 254, 0.8); }
 
-    /* Khi sắp hết giờ: Viền Đỏ 3D chớp nháy */
+    /* Trạng thái nguy hiểm Danger (Chớp nháy Đỏ 3D) */
     .player-card.danger {
+      background: linear-gradient(180deg, #421823 0%, #290d14 40%, #150509 100%) !important;
       border: 2px solid #ff0055 !important;
       box-shadow: 
-        0 0 30px rgba(255, 0, 85, 0.6),
-        0 10px 20px rgba(0, 0, 0, 0.7),
-        inset 0 2px 2px rgba(255, 0, 85, 0.5),
-        inset 0 -4px 6px rgba(0, 0, 0, 0.8) !important;
+        0 12px 0 #180308,
+        0 0 35px rgba(255, 0, 85, 0.6),
+        inset 0 3px 3px rgba(255, 0, 85, 0.6),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.9) !important;
       animation: dangerPulse 0.5s infinite alternate;
     }
-    .player-card.danger .main-time { color: #ff0055 !important; text-shadow: 0 0 15px rgba(255, 0, 85, 0.8); }
+    .player-card.danger .main-time { color: #ff0055 !important; text-shadow: 0 0 18px rgba(255, 0, 85, 0.9); }
 
     @keyframes dangerPulse {
       from { transform: scale(1); }
-      to { transform: scale(1.01); }
+      to { transform: scale(0.99); }
     }
 
     .player-card.ready {
@@ -79,45 +93,50 @@
     }
     
     @keyframes pulse {
-      0% { box-shadow: 0 0 5px rgba(255, 171, 0, 0.4); }
-      50% { box-shadow: 0 0 20px rgba(255, 171, 0, 0.8); }
-      100% { box-shadow: 0 0 5px rgba(255, 171, 0, 0.4); }
+      0% { box-shadow: 0 12px 0 #090b0e, 0 0 5px rgba(255, 171, 0, 0.4); }
+      50% { box-shadow: 0 12px 0 #090b0e, 0 0 25px rgba(255, 171, 0, 0.8); }
+      100% { box-shadow: 0 12px 0 #090b0e, 0 0 5px rgba(255, 171, 0, 0.4); }
     }
 
+    /* Chữ số đồng hồ LED chìm dạng 3D Screen */
     .main-time {
-      font-family: 'Orbitron', monospace; font-size: 4.2rem; font-weight: 900;
-      color: #8b949e; letter-spacing: 2px; transition: color 0.3s;
+      font-family: 'Orbitron', monospace; font-size: 4.5rem; font-weight: 900;
+      color: #717d8a; letter-spacing: 2px; transition: color 0.3s;
+      background: rgba(0, 0, 0, 0.35); padding: 5px 25px; border-radius: 16px;
+      box-shadow: inset 0 3px 6px rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.05);
     }
     
     .sub-info {
-      font-size: 1rem; color: #8b949e; margin-top: 6px; font-weight: 700;
-      display: flex; gap: 12px; background: rgba(0, 0, 0, 0.4); padding: 6px 18px; border-radius: 20px;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+      font-size: 1rem; color: #8b949e; margin-top: 10px; font-weight: 700;
+      display: flex; gap: 14px; background: rgba(0, 0, 0, 0.5); padding: 6px 18px; border-radius: 20px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
     }
     .sub-info span { color: #ffab00; }
     .sub-info .count { color: #00f2fe; }
 
-    /* Controls 3D */
+    /* Thanh điều khiển trung tâm 3D */
     .controls {
-      display: flex; justify-content: center; gap: 12px; padding: 8px 10px;
-      background: #0d1117; z-index: 10;
+      display: flex; justify-content: center; gap: 10px; padding: 6px 0; z-index: 10;
     }
     
     .btn {
-      padding: 12px 20px; font-size: 0.95rem; font-weight: 700; border-radius: 14px;
+      padding: 12px 18px; font-size: 0.95rem; font-weight: 700; border-radius: 14px;
       border: none; cursor: pointer; 
-      background: linear-gradient(145deg, #282e38, #1b2026); color: #c9d1d9;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
-      transition: 0.1s; display: flex; align-items: center; gap: 6px;
+      background: linear-gradient(180deg, #2c333f 0%, #1a1f27 100%); color: #c9d1d9;
+      box-shadow: 0 5px 0 #0f1318, 0 5px 10px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2);
+      transition: 0.08s; display: flex; align-items: center; gap: 6px;
     }
     .btn:active { 
-      transform: translateY(2px);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 2px 4px rgba(0,0,0,0.8);
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #0f1318, 0 2px 5px rgba(0,0,0,0.5);
     }
     .btn-primary { 
-      background: linear-gradient(145deg, #1e62d0, #003eb3); 
+      background: linear-gradient(180deg, #1f68e0 0%, #003db8 100%); 
       color: #fff; 
-      box-shadow: 0 4px 15px rgba(0, 82, 212, 0.5), inset 0 1px 1px rgba(255,255,255,0.3);
+      box-shadow: 0 5px 0 #002266, 0 5px 15px rgba(0, 82, 212, 0.4), inset 0 1px 1px rgba(255,255,255,0.3);
+    }
+    .btn-primary:active {
+      box-shadow: 0 2px 0 #002266, 0 2px 5px rgba(0, 82, 212, 0.4);
     }
 
     .modal-overlay {
@@ -147,13 +166,15 @@
 <body>
 
   <!-- Người chơi 1 -->
-  <button id="p1" class="player-card" onclick="switchPlayer(1)">
-    <div id="p1-main" class="main-time">15:00</div>
-    <div class="sub-info">
-      <span>Nước: <b id="p1-move">60</b>s</span>
-      | <span class="count">Đã đi: <b id="p1-count">0</b></span>
-    </div>
-  </button>
+  <div class="player-wrapper" id="wrapper-p1">
+    <button id="p1" class="player-card" onclick="switchPlayer(1)">
+      <div id="p1-main" class="main-time">15:00</div>
+      <div class="sub-info">
+        <span>Nước: <b id="p1-move">60</b>s</span>
+        | <span class="count">Đã đi: <b id="p1-count">0</b></span>
+      </div>
+    </button>
+  </div>
 
   <!-- Điều khiển trung tâm -->
   <div class="controls">
@@ -163,13 +184,15 @@
   </div>
 
   <!-- Người chơi 2 -->
-  <button id="p2" class="player-card" onclick="switchPlayer(2)">
-    <div id="p2-main" class="main-time">15:00</div>
-    <div class="sub-info">
-      <span>Nước: <b id="p2-move">60</b>s</span>
-      | <span class="count">Đã đi: <b id="p2-count">0</b></span>
-    </div>
-  </button>
+  <div class="player-wrapper">
+    <button id="p2" class="player-card" onclick="switchPlayer(2)">
+      <div id="p2-main" class="main-time">15:00</div>
+      <div class="sub-info">
+        <span>Nước: <b id="p2-move">60</b>s</span>
+        | <span class="count">Đã đi: <b id="p2-count">0</b></span>
+      </div>
+    </button>
+  </div>
 
   <!-- Modal Cài đặt -->
   <div class="modal-overlay" id="settings-modal">
@@ -177,19 +200,19 @@
       <h2>CÀI ĐẶT THỜI GIAN</h2>
       <div class="form-group">
         <label>Tổng thời gian ván (Phút):</label>
-        <input type="number" id="input-total" min="1" max="180" value="15">
+        <input type="number" id="input-total" min="1" max="180">
       </div>
       <div class="form-group">
         <label>Thời gian 1 nước (Giây):</label>
-        <input type="number" id="input-move" min="5" max="300" value="60">
+        <input type="number" id="input-move" min="5" max="300">
       </div>
       <div class="form-group">
         <label>Cộng thêm mỗi nước (Giây):</label>
-        <input type="number" id="input-inc" min="0" max="60" value="5">
+        <input type="number" id="input-inc" min="0" max="60">
       </div>
       <div class="form-group">
-        <label>Bắt đầu bíp dồn dập (Giây cuối - 0 để tắt):</label>
-        <input type="number" id="input-tension" min="0" max="30" value="10">
+        <label>Cảnh báo âm thanh (Giây cuối - 0 để tắt):</label>
+        <input type="number" id="input-tension" min="0" max="30">
       </div>
       <div class="modal-actions">
         <button class="btn" onclick="closeSettings()">Hủy</button>
@@ -199,10 +222,31 @@
   </div>
 
   <script>
-    let totalMinutes = 15, maxMoveSeconds = 60, incrementSeconds = 5, tensionSeconds = 10;
+    // Khởi tạo các giá trị từ LocalStorage hoặc mặc định
+    let totalMinutes = parseInt(localStorage.getItem('chess_total')) || 15;
+    let maxMoveSeconds = parseInt(localStorage.getItem('chess_move')) || 60;
+    let incrementSeconds = parseInt(localStorage.getItem('chess_inc')) || 5;
+    let tensionSeconds = parseInt(localStorage.getItem('chess_tension')) || 10;
+
     let p1Main, p2Main, p1Move, p2Move, p1Count = 0, p2Count = 0;
-    let activePlayer = null, timer = null, audioCtx = null;
+    let activePlayer = null, timer = null, audioCtx = null, wakeLock = null;
     let gameState = 'IDLE';
+
+    // Bật Wake Lock giữ màn hình luôn sáng
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (err) {}
+    }
+
+    function releaseWakeLock() {
+      if (wakeLock !== null) {
+        wakeLock.release();
+        wakeLock = null;
+      }
+    }
 
     function getAudioContext() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -211,7 +255,7 @@
     }
 
     function triggerHaptic() {
-      if (navigator.vibrate) navigator.vibrate(15);
+      if (navigator.vibrate) navigator.vibrate(20);
     }
 
     function playBeep(freq = 440, type = 'sine', duration = 0.1) {
@@ -268,9 +312,11 @@
       if (gameState === 'RUNNING') {
         clearInterval(timer); timer = null;
         gameState = 'IDLE';
+        releaseWakeLock();
         document.getElementById('start-btn').innerHTML = '► Tiếp tục';
       } else if (gameState === 'IDLE') {
         gameState = 'READY';
+        requestWakeLock();
         document.getElementById('start-btn').innerHTML = '❚❚ Tạm dừng';
         document.getElementById('p1').classList.add('ready');
         document.getElementById('p2').classList.add('ready');
@@ -314,6 +360,7 @@
 
     function startCountdown() {
       gameState = 'RUNNING';
+      requestWakeLock();
       updateActiveUI();
 
       if (timer) clearInterval(timer);
@@ -335,14 +382,18 @@
     function endGame(msg) {
       clearInterval(timer); timer = null;
       gameState = 'IDLE';
+      releaseWakeLock();
       playBeep(150, 'sawtooth', 0.8); alert(msg);
     }
 
     function resetGame() {
       triggerHaptic();
+      if (gameState === 'RUNNING' && !confirm('Bạn có chắc muốn đặt lại ván cờ?')) return;
+
       if (timer) { clearInterval(timer); timer = null; }
       gameState = 'IDLE';
       activePlayer = null;
+      releaseWakeLock();
       document.getElementById('p1').classList.remove('active', 'ready', 'danger');
       document.getElementById('p2').classList.remove('active', 'ready', 'danger');
       document.getElementById('start-btn').innerHTML = '► Sẵn sàng';
@@ -365,11 +416,18 @@
       maxMoveSeconds = parseInt(document.getElementById('input-move').value) || 60;
       incrementSeconds = parseInt(document.getElementById('input-inc').value) || 0;
       tensionSeconds = parseInt(document.getElementById('input-tension').value) || 0;
+
+      // Lưu tự động vào LocalStorage
+      localStorage.setItem('chess_total', totalMinutes);
+      localStorage.setItem('chess_move', maxMoveSeconds);
+      localStorage.setItem('chess_inc', incrementSeconds);
+      localStorage.setItem('chess_tension', tensionSeconds);
+
       closeSettings(); resetGame();
     }
 
     if ('serviceWorker' in navigator) {
-      const swCode = `self.addEventListener('install', e => e.waitUntil(caches.open('co-v6').then(c => c.addAll(['./'])))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));`;
+      const swCode = `self.addEventListener('install', e => e.waitUntil(caches.open('co-v7').then(c => c.addAll(['./'])))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));`;
       const blob = new Blob([swCode], { type: 'application/javascript' });
       navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
     }
